@@ -24,14 +24,21 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get
-
       - name: Build APK Release
-        run: flutter build apk --release
+        run: |
+          # Otomatis mencari lokasi folder yang memuat pubspec.yaml
+          PROJECT_DIR=$(find . -maxdepth 3 -name "pubspec.yaml" -exec dirname {} \; | head -n 1)
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "Error: File pubspec.yaml tidak ditemukan di repositori!"
+            exit 1
+          fi
+          echo "Menemukan proyek di: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          flutter pub get
+          flutter build apk --release
 
       - name: Upload APK ke GitHub
         uses: actions/upload-artifact@v4
         with:
           name: smart-pos-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: '**/app-release.apk'
